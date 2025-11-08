@@ -6,15 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+
 @RestController
+@CrossOrigin
 @RequestMapping(value="api/v1")
 public class AuthController {
 
@@ -25,15 +27,33 @@ public class AuthController {
     private JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login (@RequestBody UserDTO loginDto) {
+    public ResponseEntity<Map<String, Object>> login (@RequestBody UserDTO loginDto) {
         UsernamePasswordAuthenticationToken authInputToken = new UsernamePasswordAuthenticationToken(loginDto.getName(), loginDto.getPassword());
-        authenticationManager.authenticate(authInputToken);
+
+        // 1) Authenticate and get the authenticated Authentication
+        Authentication authentication = authenticationManager.authenticate(authInputToken);
+
+        // 2) (Recommended) Store it in the SecurityContext so future calls can read it
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 3) Now the principal is a UserDetails
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        String role = userDetails.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority()
+                .replace("ROLE_", "");
 
         String token = jwtService.generateToken(loginDto.getName());
 
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         response.put("message", "Login successful!");
         response.put("token", token);
+        response.put("user", Map.of(
+                "name", userDetails.getUsername(),
+                "roles", role
+        ));
 
         return ResponseEntity.ok(response);
     }

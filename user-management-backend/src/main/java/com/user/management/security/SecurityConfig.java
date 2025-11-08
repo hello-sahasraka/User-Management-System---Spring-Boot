@@ -27,20 +27,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF for REST APIs
+                // Disable CSRF for REST APIs
                 .csrf(csrf -> csrf.disable())
+                // Enables CORS configuration from WebMvcConfigurer
+                .cors(cors -> {})
 
-                // 2. Authorization rules
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/register", "/api/v1/**").permitAll()
                         .anyRequest().authenticated()
-                )
-
-                // 3. Optional: enable form login if you’re testing via browser
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll()
                 );
+
+                // Optional: enable form login if you’re testing via browser
+                //.formLogin(form -> form
+                        //.loginPage("/api/v1/login")
+                        //.permitAll()
+                //);
 
         return http.build();
     }

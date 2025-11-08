@@ -5,9 +5,15 @@ import { toast } from "react-toastify";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 
+interface User {
+  name: string;
+  role: string;
+}
+
 interface LoginResponse {
   token: string;
   message: string;
+  user: User;
 }
 
 const Login = () => {
@@ -27,7 +33,9 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await axios.post<LoginResponse>(`${baseURL}/api/v1/login`, { name, password });
+      console.log(response);
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
       toast.success(response.data.message || "Login successful!");
     } catch (err) {
       console.error("Login failed:", err);
