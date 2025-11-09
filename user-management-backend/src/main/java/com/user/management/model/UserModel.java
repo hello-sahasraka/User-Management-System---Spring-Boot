@@ -17,6 +17,9 @@ public class UserModel {
     private String name;
     private String email;
     private String password;
+    private String address;
+    private String phone;
+    private String image;
     @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'USER'")
     private String role = "USER";
 

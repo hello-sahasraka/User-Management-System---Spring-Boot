@@ -1,5 +1,6 @@
 package com.user.management.service;
 
+import com.user.management.model.CustomUserDetails;
 import com.user.management.model.UserModel;
 import com.user.management.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // Wrap UserModel in a Spring Security User object
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getName())
-                .password(user.getPassword())
-                .roles(user.getRole())
-                .build();
+        return new CustomUserDetails(
+                user.getName(),
+                user.getPassword(),
+                user.getRole(),
+                user.getImage()
+        );
     }
 }

@@ -1,6 +1,7 @@
 package com.user.management.controller;
 
 import com.user.management.dto.UserDTO;
+import com.user.management.model.CustomUserDetails;
 import com.user.management.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -37,13 +37,12 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // 3) Now the principal is a UserDetails
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         String role = userDetails.getAuthorities()
                 .iterator()
                 .next()
-                .getAuthority()
-                .replace("ROLE_", "");
+                .getAuthority();
 
         String token = jwtService.generateToken(loginDto.getName());
 
@@ -52,6 +51,7 @@ public class AuthController {
         response.put("token", token);
         response.put("user", Map.of(
                 "name", userDetails.getUsername(),
+//                "image", userDetails.getImage(),
                 "roles", role
         ));
 

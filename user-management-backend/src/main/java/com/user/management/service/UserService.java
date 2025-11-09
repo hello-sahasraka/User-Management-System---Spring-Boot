@@ -58,6 +58,8 @@ public class UserService {
         String hashedPassword = passwordEncoder.encode(userModel.getPassword());
         userModel.setPassword(hashedPassword);
 
+        userModel.setImage("http//:image_url");
+
         UserModel savedUser = userRepo.save(userModel);
         return modelMapper.map(savedUser, UserDTO.class);
     }
