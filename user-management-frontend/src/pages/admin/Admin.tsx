@@ -36,6 +36,7 @@ const Admin = () => {
   const [userList, setUserList] = useState<Person[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [openAddModal, setOpenAddModal] = useState(false);
+  const [state, setState] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,10 +54,40 @@ const Admin = () => {
     };
 
     fetchData();
-  }, []);
+  }, [state]);
 
   const handleAddUser = async (data: NewUser) => {
-    console.log("Adding user:", data);
+    const { image, ...userData } = data;
+
+    const formData = new FormData();
+    
+    formData.append(
+      "user", new Blob([JSON.stringify(userData)], { type: "application/json" })
+    );
+
+    if (image) {
+      formData.append("image", image);
+    }
+
+    const createPromise = axios.post<Person>(`${baseURL}/api/v1/createuser`, formData, {
+      headers: {
+        "Authorization": "Bearer " + localStorage.getItem("token"),
+        "Content-Type": "multipart/form-data"
+      },
+    });
+
+    try {
+      const response = await toast.promise(createPromise, {
+        pending: "Saving user...",
+        success: "Data saved successfully!",
+        error: "Something went wrong!",
+      });
+      console.log(response);
+      setOpenAddModal(false);
+      setState((s) => !s);
+    } catch (err) {
+      console.error("Error adding user:", err);
+    }
   }
 
   return (

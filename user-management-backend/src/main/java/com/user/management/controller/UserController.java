@@ -3,8 +3,11 @@ package com.user.management.controller;
 import com.user.management.dto.UserDTO;
 import com.user.management.repo.UserRepo;
 import com.user.management.service.UserService;
+import com.user.management.utils.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,8 +28,15 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
-    @PostMapping("/createuser")
-    public UserDTO createUser(@RequestBody UserDTO userDTO) {
+    @PostMapping(
+            value = "/createuser",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public UserDTO createUser(@RequestPart("user") UserDTO userDTO, @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        String password = PasswordGenerator.generateSecurePassword(12);
+        userDTO.setPassword(password);
+
         return userService.createUser(userDTO);
     }
 

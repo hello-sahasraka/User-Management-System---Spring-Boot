@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import FileUploads from './buttons/FileUploads';
+import { toast } from 'react-toastify';
 
 interface AddUserModalProps {
     open: boolean;
@@ -38,6 +39,10 @@ const AddUser = ({ open, onClose, onSubmit }: AddUserModalProps) => {
     const { register, handleSubmit, reset, setValue } = useForm<UserFormData>();
 
     const handleFormSubmit = (data: UserFormData) => {
+        if (data.address === "" || data.email === "" || data.name === "") {
+            toast.warning("Please fill all required fields.");
+            return;
+        }
         onSubmit(data);
         reset();
         onClose();
