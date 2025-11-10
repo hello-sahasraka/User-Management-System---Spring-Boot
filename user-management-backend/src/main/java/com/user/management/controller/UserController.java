@@ -6,6 +6,8 @@ import com.user.management.service.UserService;
 import com.user.management.utils.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,13 +25,13 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    @GetMapping("/getuserbyid/{userId}")
+    @GetMapping("/admin/getuserbyid/{userId}")
     public UserDTO getUserById(@PathVariable Integer userId) {
         return userService.getUserById(userId);
     }
 
     @PostMapping(
-            value = "/createuser",
+            value = "/admin/createuser",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public UserDTO createUser(@RequestPart("user") UserDTO userDTO, @RequestPart(value = "image", required = false) MultipartFile image) {
@@ -40,9 +42,9 @@ public class UserController {
         return userService.createUser(userDTO);
     }
 
-    @PutMapping("/updateuser")
+    @PutMapping("/admin/updateuser")
     public UserDTO updateUser(@RequestBody UserDTO userDTO) { return userService.updateUser(userDTO); }
 
-    @DeleteMapping("/deleteuser/{userId}")
+    @DeleteMapping("/admin/deleteuser/{userId}")
     public String deleteUser(@PathVariable int userId) { return userService.deleteUser(userId); }
 }
