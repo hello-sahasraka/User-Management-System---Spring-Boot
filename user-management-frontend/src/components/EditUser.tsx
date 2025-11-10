@@ -13,11 +13,23 @@ import {
 import { useForm } from 'react-hook-form';
 import FileUploads from './buttons/FileUploads';
 import { toast } from 'react-toastify';
+import { useEffect } from 'react';
 
-interface AddUserModalProps {
+interface Person {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    address: string;
+    phone: string;
+    image?: string;
+}
+
+interface EditUserModalProps {
     open: boolean;
     onClose: () => void;
     onSubmit: (data: any) => void;
+    oldData: Person | null;
 }
 
 interface UserFormData {
@@ -29,18 +41,33 @@ interface UserFormData {
     image?: File | null;
 }
 
-const AddUser = ({ open, onClose, onSubmit }: AddUserModalProps) => {
+const EditUser = ({ open, onClose, onSubmit, oldData }: EditUserModalProps) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const { register, handleSubmit, reset, setValue } = useForm<UserFormData>();
+
+    useEffect(() => {
+        if (oldData) {
+            reset({
+                name: oldData.name,
+                email: oldData.email,
+                role: oldData.role,
+                address: oldData.address,
+                phone: oldData.phone,
+                image: null,
+            });
+        }
+    }, [oldData, reset]);
 
     const handleFormSubmit = (data: UserFormData) => {
         if (data.address === "" || data.email === "" || data.name === "") {
             toast.warning("Please fill all required fields.");
             return;
         }
-        onSubmit(data);
+        const newData = { ...data, id: oldData?.id };
+
+        onSubmit(newData);
         reset();
         onClose();
     };
@@ -68,7 +95,7 @@ const AddUser = ({ open, onClose, onSubmit }: AddUserModalProps) => {
                     pb: isMobile ? 1 : 2,
                 }}
             >
-                Add New User
+                Update User
             </DialogTitle>
 
             <DialogContent dividers>
@@ -91,7 +118,7 @@ const AddUser = ({ open, onClose, onSubmit }: AddUserModalProps) => {
                         label="Role"
                         fullWidth
                         size={isMobile ? "small" : "medium"}
-                        defaultValue=""          
+                        defaultValue="USER"
                         {...register("role")}
                     >
                         <MenuItem value="">Select Role</MenuItem>
@@ -149,11 +176,11 @@ const AddUser = ({ open, onClose, onSubmit }: AddUserModalProps) => {
                         mr: isMobile ? 0 : 2,
                     }}
                 >
-                    Add User
+                    Update User
                 </Button>
             </DialogActions>
         </Dialog>
     );
 };
 
-export default AddUser;
+export default EditUser;

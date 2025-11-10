@@ -37,7 +37,7 @@ const Login = () => {
     try {
       const response = await axios.post<LoginResponse>(`${baseURL}/api/v1/login`, { name, password });
       
-      if (response.data.user.roles == "ADMIN") {
+      if (response.data.user.roles == "ROLE_ADMIN") {
         navigate("/admin");
       } else {
         navigate("/user");

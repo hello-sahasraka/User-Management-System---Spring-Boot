@@ -7,6 +7,7 @@ import ControlPointOutlinedIcon from '@mui/icons-material/ControlPointOutlined';
 import AddUser from "../../components/AddUser";
 import Loading from "../../components/Loading";
 import { Tooltip } from "@mui/material";
+import EditUser from "../../components/EditUser";
 
 const baseURL = import.meta.env.VITE_BACKEND_URL as string;
 
@@ -19,7 +20,6 @@ interface Person {
   address: string;
   phone: string;
   image?: string;
-  roles: string;
 }
 
 interface NewUser {
@@ -32,10 +32,13 @@ interface NewUser {
 }
 
 
+
 const Admin = () => {
   const [userList, setUserList] = useState<Person[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [openAddModal, setOpenAddModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<Person | null>(null);
   const [state, setState] = useState(false);
 
   useEffect(() => {
@@ -60,7 +63,7 @@ const Admin = () => {
     const { image, ...userData } = data;
 
     const formData = new FormData();
-    
+
     formData.append(
       "user", new Blob([JSON.stringify(userData)], { type: "application/json" })
     );
@@ -69,7 +72,7 @@ const Admin = () => {
       formData.append("image", image);
     }
 
-    const createPromise = axios.post<Person>(`${baseURL}/api/v1/createuser`, formData, {
+    const createPromise = axios.post<Person>(`${baseURL}/api/v1/admin/createuser`, formData, {
       headers: {
         "Authorization": "Bearer " + localStorage.getItem("token"),
         "Content-Type": "multipart/form-data"
@@ -90,6 +93,42 @@ const Admin = () => {
     }
   }
 
+  const handleDeleteUser = async (id: number) => {
+    try {
+      await axios.delete(`${baseURL}/api/v1/admin/deleteuser/${id}`, {
+        headers: {
+          "Authorization": "Bearer " + localStorage.getItem("token"),
+        },
+      });
+      toast.success("User deleted successfully!");
+      setState((s) => !s);
+    } catch (error) {
+      toast.error("Failed to delete user.");
+      console.error("Error deleting user:", error);
+    }
+  };
+
+  const handleEditUser = (person: Person) => {
+    setOpenEditModal(true);
+    setSelectedUser(person);
+  }
+
+  const handleUpdateUser = async (data: Person) => {
+    console.log(data);
+    try {
+      await axios.put(`${baseURL}/api/v1/admin/updateuser`, data, {
+        headers: {
+          "Authorization": "Bearer " + localStorage.getItem("token"),
+        },
+      });
+      toast.success("User updated successfully!");
+      setState((s) => !s);
+    } catch (error) {
+      toast.error("Failed to update user.");
+      console.error("Error updating user:", error);
+    }
+  };
+
   return (
     <div>
       {loading ? (
@@ -99,8 +138,8 @@ const Admin = () => {
           <NavBar />
           <AdminTable
             data={userList}
-            onEdit={(person) => console.log('Edit:', person)}
-            onDelete={(id) => console.log('Delete ID:', id)}
+            onEdit={(person) => handleEditUser(person)}
+            onDelete={(id) => handleDeleteUser(id)}
           />
           <div>
             <Tooltip title="Add User" placement="left-end">
@@ -119,6 +158,12 @@ const Admin = () => {
             open={openAddModal}
             onClose={() => setOpenAddModal(false)}
             onSubmit={handleAddUser}
+          />
+          <EditUser
+            open={openEditModal}
+            onClose={() => setOpenEditModal(false)}
+            onSubmit={handleUpdateUser}
+            oldData={selectedUser}
           />
         </div>
       )}

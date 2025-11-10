@@ -14,7 +14,6 @@ interface Person {
     address: string;
     phone: string;
     image?: string;
-    roles: string;
 }
 
 const AdminTable = ({
