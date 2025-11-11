@@ -3,10 +3,12 @@ package com.user.management.controller;
 import com.user.management.dto.UserDTO;
 import com.user.management.repo.UserRepo;
 import com.user.management.service.EmailService;
+import com.user.management.service.MinioService;
 import com.user.management.service.UserService;
 import com.user.management.utils.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mail.MailSendException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,9 @@ public class UserController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private MinioService minioService;
+
     @GetMapping("/getusers")
     public List<UserDTO> getUser() {
         return userService.getAllUsers();
@@ -38,13 +43,34 @@ public class UserController {
             value = "/admin/createuser",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public UserDTO createUser(@RequestPart("user") UserDTO userDTO, @RequestPart(value = "image", required = false) MultipartFile image) {
-
+    public UserDTO createUser(
+            @RequestPart("user") UserDTO userDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
         String password = PasswordGenerator.generateSecurePassword(12);
         userDTO.setPassword(password);
-        emailService.sendSimpleMail(userDTO.getEmail(), userDTO.getPassword());
 
-        return userService.createUser(userDTO);
+        if (image != null && !image.isEmpty()) {
+            System.out.println("Image received: " + image.getOriginalFilename());
+
+            try {
+                userDTO.setImage(minioService.upload(image));
+            } catch (Exception e) {
+                System.out.println(e);
+                throw new RuntimeException("Image upload failed: " + e.getMessage(), e);
+            }
+        }
+
+        UserDTO createdUser = userService.createUser(userDTO);
+
+        try {
+            emailService.sendSimpleMail(userDTO.getEmail(), userDTO.getPassword());
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new MailSendException("Failed to send verification email", e);
+        }
+
+        return createdUser;
     }
 
     @PutMapping("/admin/updateuser")

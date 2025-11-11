@@ -24,3 +24,10 @@ spring:
           auth: true
           starttls:
             enable: true
+
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: accentra-bucket
+
