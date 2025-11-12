@@ -44,9 +44,9 @@ const NavBar = () => {
         <img
           src={image || userIcon}
           alt="User"
-          className="h-8 sm:h-10 rounded-full object-cover"
+          className="h-8 sm:h-10 aspect-square rounded-full object-cover border-2 border-gray-200"
         />
-        <span className="font-semibold text-sm sm:text-base truncate max-w-[120px] sm:max-w-none">
+        <span className="font-semibold text-lg sm:text-base truncate max-w-[120px] sm:max-w-none">
           {name}
         </span>
       </div>

@@ -51,7 +51,7 @@ public class AuthController {
         response.put("token", token);
         response.put("user", Map.of(
                 "name", userDetails.getUsername(),
-//                "image", userDetails.getImage(),
+                "image", userDetails.getImage(),
                 "roles", role
         ));
 
